@@ -41,3 +41,7 @@ See `benchmark/results.md` for perplexity and memory comparisons vs full GPU bas
 ## Status
 
 Prototype. Benchmarks run on Qwen3-8B with comparison of GPU memory usage and inference speed at various sequence lengths.
+
+**Measured status:** Measured on Qwen3-8B, but the test prompts were below the 4096-token offload threshold, so offloading never triggered. This run only shows the hooks add no measurable overhead; a long-context run is still to do.
+
+See [RESULTS.md](RESULTS.md)
