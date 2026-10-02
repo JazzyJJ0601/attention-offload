@@ -1,47 +1,60 @@
-# Attention Offloading
+# Attention Offload
 
-Selective attention score computation offloading from GPU to CPU for running large language models on consumer hardware. Targets the memory bottleneck of attention score matrices during long-context inference.
+Long-context decoding for Qwen3-8B on one 24 GB GPU, when the KV cache no longer fits next to the weights.
+Attention stays **exact**: no tokens are dropped or compressed.
 
-## Problem
+**Result (RTX 3090 Ti, Qwen3-8B bf16, 32 greedy tokens):** at a 49,152-token prompt the all-GPU baseline runs
+out of memory. Split attention decodes at **215 ms/token**, against 294 ms/token for CPU attention and
+2,201 ms/token for the usual "copy the cache to the GPU each step" offload. It produces the same 32 tokens as the
+reference. Below 16k tokens nothing is offloaded, so it runs at full GPU speed.
 
-Standard attention computes a score matrix of shape `[seq_len, seq_len]`. For a 32K context window this matrix alone needs ~4GB in FP32, exceeding consumer GPU capacity even when model weights fit. Full-weight offloading is too slow; this approach offloads only the score computation.
+## The idea
 
-## Approach
+Qwen3-8B in bf16 takes about 16.4 GB, and its KV cache costs 144 KiB per token, so a 48k prompt needs about
+6.75 GB more than a 24 GB card has left. The usual offloaded cache copies every layer's keys and values back to
+the GPU on every decoding step, so you pay the PCIe cost of the whole cache per token.
 
-- **Keeps on GPU**: KV cache, model weights, value tensors
-- **Offloads to CPU**: Attention score computation (QK^T), softmax normalization, weighted sum
-- **Threshold-gated**: Only triggers offloading when sequence length exceeds a configurable threshold
+Split attention instead keeps the first G tokens of every layer on the GPU and the rest in CPU memory. On each
+step:
 
-## Usage
+1. the GPU attends to its part (flash attention), while
+2. the CPU attends to its part at the same time (only the query goes over; only a small output comes back);
+3. the two partial results are merged exactly with their log-sum-exp.
 
-```python
-from attention_offload import AttentionOffloader
-from transformers import AutoModelForCausalLM
+The merge is exact maths, not an approximation, so the output is the same attention up to floating-point
+rounding.
 
-model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-8B")
-offloader = AttentionOffloader(model, offload_threshold=4096)
-offloader.register_hooks()
+## Results
 
-# Inference proceeds normally; hooks handle offload
-outputs = model(input_ids)
+ms per generated token (lower is better). Same prompt (WikiText-2), same prefill, 32 greedy tokens.
+
+| Prompt | GPU only (baseline) | Fetch to GPU | CPU attention | **Split (ours)** |
+|---:|---:|---:|---:|---:|
+| 8,192 | 25.9 | 371.3 | 74.7 | **25.9** (nothing offloaded) |
+| 16,384 | 27.4 | 739.1 | 123.5 | **32.0** |
+| 32,768 | 30.4 (21.8 GB peak) | 1,469.1 | 293.7 | **129.7** |
+| 49,152 | **out of memory** | 2,200.5 | 294.2 | **215.3** |
+
+- **Above the GPU's limit**, split is 1.4× faster than CPU attention and 10× faster than fetching the cache.
+- **At 32k**, where the whole cache still just fits (21.8 GB peak), the GPU is faster (30.4 ms). Split is the
+  option for when it doesn't fit, or when you want to keep about 2 GB free (19.5 GB peak).
+- **Correctness:** every offloaded mode generated the same 32 tokens as its reference (the GPU run, or fetch at
+  48k where the GPU can't run). The largest logit difference was 0.58 on a logit scale of about 28, from bf16
+  vs fp32 arithmetic.
+
+Full numbers, including peak memory and where each part of the cache lived, are in [RESULTS.md](RESULTS.md) and
+`results/real.json`.
+
+## Limits
+
+- One GPU, one prompt at a time, greedy decoding. Prefill is done layer by layer and isn't optimised.
+- The CPU part scales with the offloaded length; CPU attention (24 threads) timed almost the same at 32k and
+  48k in this run, which I haven't explained yet.
+- G (tokens kept on the GPU) is fixed at 16,384 here, not tuned to the free memory.
+
+## Run it
+
+```bash
+python results/run_real.py          # needs Qwen3-8B locally (path at the top of the script), ~20 GB host RAM
+python -m pytest -q tests           # merge maths and cache bookkeeping
 ```
-
-## Benchmark
-
-See `benchmark/results.md` for perplexity and memory comparisons vs full GPU baseline.
-
-## Project Structure
-
-- `attention_offload.py` — Core `AttentionOffloader` class with hook registration
-- `methodology.md` — Detailed explanation of memory bottleneck and offloading strategy
-- `benchmark/` — Perplexity and memory benchmark scripts
-- `research/` — Related work survey
-- `tests/` — Unit tests
-
-## Status
-
-Prototype. Benchmarks run on Qwen3-8B with comparison of GPU memory usage and inference speed at various sequence lengths.
-
-**Measured status:** Measured on Qwen3-8B, but the test prompts were below the 4096-token offload threshold, so offloading never triggered. This run only shows the hooks add no measurable overhead; a long-context run is still to do.
-
-See [RESULTS.md](RESULTS.md)

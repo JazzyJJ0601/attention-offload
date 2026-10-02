@@ -1,0 +1,189 @@
+{
+  "model": "Qwen3-8B bf16",
+  "gpu": "NVIDIA GeForce RTX 3090 Ti",
+  "gpu_total_gb": 23.55,
+  "cpu_threads": 24,
+  "new_tokens": 32,
+  "split_gpu_tokens": 16384,
+  "kv_kib_per_token": 144.0,
+  "check_vs_hf": {
+    "prefill_last_logit_max_diff": 0.0625,
+    "decode_step_max_diff": 0.125,
+    "hf_logit_scale": 28.12
+  },
+  "rows": [
+    {
+      "mode": "gpu",
+      "prompt": 8192,
+      "prefill_s": 2.02,
+      "ms_per_token": 25.9,
+      "peak_gpu_gb": 16.9,
+      "kv_on_gpu_gb": 1.13,
+      "kv_on_cpu_gb": 0.0
+    },
+    {
+      "mode": "fetch",
+      "prompt": 8192,
+      "prefill_s": 2.64,
+      "ms_per_token": 371.3,
+      "peak_gpu_gb": 15.78,
+      "kv_on_gpu_gb": 0.0,
+      "kv_on_cpu_gb": 1.13,
+      "same_tokens_as_ref": 32,
+      "max_logit_diff_vs_ref": 0.0,
+      "ref": "gpu"
+    },
+    {
+      "mode": "cpu",
+      "prompt": 8192,
+      "prefill_s": 2.74,
+      "ms_per_token": 74.7,
+      "peak_gpu_gb": 15.77,
+      "kv_on_gpu_gb": 0.0,
+      "kv_on_cpu_gb": 2.26,
+      "same_tokens_as_ref": 32,
+      "max_logit_diff_vs_ref": 0.3125,
+      "ref": "gpu"
+    },
+    {
+      "mode": "split",
+      "prompt": 8192,
+      "prefill_s": 2.04,
+      "ms_per_token": 25.9,
+      "peak_gpu_gb": 16.9,
+      "kv_on_gpu_gb": 1.13,
+      "kv_on_cpu_gb": 0.0,
+      "same_tokens_as_ref": 32,
+      "max_logit_diff_vs_ref": 0.0,
+      "ref": "gpu"
+    },
+    {
+      "mode": "gpu",
+      "prompt": 16384,
+      "prefill_s": 4.59,
+      "ms_per_token": 27.4,
+      "peak_gpu_gb": 18.53,
+      "kv_on_gpu_gb": 2.25,
+      "kv_on_cpu_gb": 0.0
+    },
+    {
+      "mode": "fetch",
+      "prompt": 16384,
+      "prefill_s": 5.76,
+      "ms_per_token": 739.1,
+      "peak_gpu_gb": 16.28,
+      "kv_on_gpu_gb": 0.0,
+      "kv_on_cpu_gb": 2.25,
+      "same_tokens_as_ref": 32,
+      "max_logit_diff_vs_ref": 0.0,
+      "ref": "gpu"
+    },
+    {
+      "mode": "cpu",
+      "prompt": 16384,
+      "prefill_s": 6.07,
+      "ms_per_token": 123.5,
+      "peak_gpu_gb": 16.27,
+      "kv_on_gpu_gb": 0.0,
+      "kv_on_cpu_gb": 4.51,
+      "same_tokens_as_ref": 32,
+      "max_logit_diff_vs_ref": 0.25,
+      "ref": "gpu"
+    },
+    {
+      "mode": "split",
+      "prompt": 16384,
+      "prefill_s": 4.61,
+      "ms_per_token": 32.0,
+      "peak_gpu_gb": 18.52,
+      "kv_on_gpu_gb": 2.25,
+      "kv_on_cpu_gb": 0.01,
+      "same_tokens_as_ref": 32,
+      "max_logit_diff_vs_ref": 0.25,
+      "ref": "gpu"
+    },
+    {
+      "mode": "gpu",
+      "prompt": 32768,
+      "prefill_s": 11.51,
+      "ms_per_token": 30.4,
+      "peak_gpu_gb": 21.78,
+      "kv_on_gpu_gb": 4.5,
+      "kv_on_cpu_gb": 0.0
+    },
+    {
+      "mode": "fetch",
+      "prompt": 32768,
+      "prefill_s": 13.86,
+      "ms_per_token": 1469.1,
+      "peak_gpu_gb": 17.28,
+      "kv_on_gpu_gb": 0.0,
+      "kv_on_cpu_gb": 4.5,
+      "same_tokens_as_ref": 32,
+      "max_logit_diff_vs_ref": 0.0,
+      "ref": "gpu"
+    },
+    {
+      "mode": "cpu",
+      "prompt": 32768,
+      "prefill_s": 14.22,
+      "ms_per_token": 293.7,
+      "peak_gpu_gb": 17.28,
+      "kv_on_gpu_gb": 0.0,
+      "kv_on_cpu_gb": 9.01,
+      "same_tokens_as_ref": 32,
+      "max_logit_diff_vs_ref": 0.3125,
+      "ref": "gpu"
+    },
+    {
+      "mode": "split",
+      "prompt": 32768,
+      "prefill_s": 12.87,
+      "ms_per_token": 129.7,
+      "peak_gpu_gb": 19.53,
+      "kv_on_gpu_gb": 2.25,
+      "kv_on_cpu_gb": 4.51,
+      "same_tokens_as_ref": 32,
+      "max_logit_diff_vs_ref": 0.5625,
+      "ref": "gpu"
+    },
+    {
+      "mode": "gpu",
+      "prompt": 49152,
+      "oom": true
+    },
+    {
+      "mode": "fetch",
+      "prompt": 49152,
+      "prefill_s": 24.23,
+      "ms_per_token": 2200.5,
+      "peak_gpu_gb": 18.29,
+      "kv_on_gpu_gb": 0.0,
+      "kv_on_cpu_gb": 6.75
+    },
+    {
+      "mode": "cpu",
+      "prompt": 49152,
+      "prefill_s": 24.73,
+      "ms_per_token": 294.2,
+      "peak_gpu_gb": 18.28,
+      "kv_on_gpu_gb": 0.0,
+      "kv_on_cpu_gb": 13.51,
+      "same_tokens_as_ref": 32,
+      "max_logit_diff_vs_ref": 0.5625,
+      "ref": "fetch"
+    },
+    {
+      "mode": "split",
+      "prompt": 49152,
+      "prefill_s": 23.54,
+      "ms_per_token": 215.3,
+      "peak_gpu_gb": 20.53,
+      "kv_on_gpu_gb": 2.25,
+      "kv_on_cpu_gb": 9.01,
+      "same_tokens_as_ref": 32,
+      "max_logit_diff_vs_ref": 0.5781,
+      "ref": "fetch"
+    }
+  ]
+}
